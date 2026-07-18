@@ -16,5 +16,11 @@ export const bookService = {
     purchase: async (purchaseData: { customerId: number; isbn: string; quantity: number }): Promise<any> => {
         const response = await api.post('/books/purchase', purchaseData);
         return response.data;
+    },
+
+    delete: async (isbn: string): Promise<void> => {
+        const response = await api.delete(`/books/${isbn}`);
+        return response.data;
     }
+
 };

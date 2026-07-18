@@ -11,5 +11,10 @@ export const customerService = {
     create: async (customer: Customer): Promise<Customer> => {
         const response = await api.post<Customer>('/customers', customer);
         return response.data;
+    },
+
+    delete: async (id: number): Promise<void> => {
+        const response = await api.delete(`/customers/${id}`);
+        return response.data;
     }
 };
