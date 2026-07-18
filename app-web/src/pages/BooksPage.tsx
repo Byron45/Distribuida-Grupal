@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { bookService } from '../services/bookService';
-import { authorService } from '../services/authorService';
-import { customerService } from '../services/customerService';
-import type { Book, Author, Customer } from '../types/index';
+import { useAppStore } from '../store/AppContext';
 
 export const BooksPage: React.FC = () => {
-    const [books, setBooks] = useState<Book[]>([]);
-    const [authors, setAuthors] = useState<Author[]>([]);
-    const [customers, setCustomers] = useState<Customer[]>([]);
+    const { state, loadAllData, setError } = useAppStore();
 
     const [isbn, setIsbn] = useState('');
     const [title, setTitle] = useState('');
@@ -19,27 +15,7 @@ export const BooksPage: React.FC = () => {
     const [selectedCustomerId, setSelectedCustomerId] = useState('');
     const [quantitySale, setQuantitySale] = useState('1');
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const loadAllData = async () => {
-        try {
-            setLoading(true);
-            const [booksData, authorsData, customersData] = await Promise.all([
-                bookService.getAll(),
-                authorService.getAll(),
-                customerService.getAll()
-            ]);
-            setBooks(booksData);
-            setAuthors(authorsData);
-            setCustomers(customersData);
-            setError(null);
-        } catch (err: any) {
-            setError(err.message || 'Error al sincronizar datos distribuidos');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [localLoading, setLocalLoading] = useState(false);
 
     useEffect(() => {
         loadAllData();
@@ -50,15 +26,14 @@ export const BooksPage: React.FC = () => {
         if (!isbn.trim() || !title.trim() || !price || !selectedAuthorId) return;
 
         try {
-            setLoading(true);
-            const payload = {
+            setLocalLoading(true);
+            await bookService.supply({
                 isbn,
                 title,
                 price: parseFloat(price),
                 authorIds: [parseInt(selectedAuthorId)],
                 quantity: parseInt(quantitySupply)
-            };
-            await bookService.supply(payload);
+            });
             setIsbn('');
             setTitle('');
             setPrice('');
@@ -66,7 +41,7 @@ export const BooksPage: React.FC = () => {
         } catch (err: any) {
             setError(err.message || 'Error al abastecer inventario');
         } finally {
-            setLoading(false);
+            setLocalLoading(false);
         }
     };
 
@@ -75,7 +50,7 @@ export const BooksPage: React.FC = () => {
         if (!selectedIsbn || !selectedCustomerId || !quantitySale) return;
 
         try {
-            setLoading(true);
+            setLocalLoading(true);
             await bookService.purchase({
                 customerId: parseInt(selectedCustomerId),
                 isbn: selectedIsbn,
@@ -85,18 +60,20 @@ export const BooksPage: React.FC = () => {
         } catch (err: any) {
             setError(err.message || 'Error al procesar la venta');
         } finally {
-            setLoading(false);
+            setLocalLoading(false);
         }
     };
 
+    const isLoading = state.loading || localLoading;
+
     return (
         <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-            <h2>Panel de Inventario y Transacciones (Quarkus / Spring / Traefik)</h2>
+            <h2>Panel de Inventario y Transacciones Globales</h2>
 
-            {error && <div style={{ color: 'red', marginBottom: '15px' }}>⚠️ {error}</div>}
+            {state.error && <div style={{ color: 'red', marginBottom: '15px' }}>⚠️ {state.error}</div>}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-                {/* Formulario Abastecer */}
+                {/* Abastecer */}
                 <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px' }}>
                     <h3>📥 Abastecer / Ingresar Libro</h3>
                     <form onSubmit={handleSupply}>
@@ -106,39 +83,37 @@ export const BooksPage: React.FC = () => {
 
                         <select value={selectedAuthorId} onChange={(e) => setSelectedAuthorId(e.target.value)} style={{ width: '100%', marginBottom: '8px', padding: '6px' }}>
                             <option value="">-- Seleccionar Autor --</option>
-                            {authors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                            {state.authors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                         </select>
 
-                        <input type="number" min="1" value={quantitySupply} onChange={(e) => setQuantitySupply(e.target.value)} placeholder="Cantidad" style={{ width: '100%', marginBottom: '12px', padding: '6px' }} />
-                        <button type="submit" style={{ padding: '8px 12px', cursor: 'pointer' }} disabled={loading}>Abastecer Stock</button>
+                        <input type="number" min="1" value={quantitySupply} onChange={(e) => setQuantitySupply(e.target.value)} style={{ width: '100%', marginBottom: '12px', padding: '6px' }} />
+                        <button type="submit" style={{ padding: '8px 12px', cursor: 'pointer' }} disabled={isLoading}>Abastecer Stock</button>
                     </form>
                 </div>
 
-                {/* Formulario Venta */}
+                {/* Venta */}
                 <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px' }}>
                     <h3>💸 Registrar Venta (Transacción)</h3>
                     <form onSubmit={handlePurchase}>
                         <select value={selectedCustomerId} onChange={(e) => setSelectedCustomerId(e.target.value)} style={{ width: '100%', marginBottom: '8px', padding: '6px' }}>
                             <option value="">-- Seleccionar Cliente --</option>
-                            {customers.map(c => (
-                                <option key={c.id} value={c.id}>
-                                    {c.firstName} {c.lastName} ({c.email})
-                                </option>
+                            {state.customers.map(c => (
+                                <option key={c.id} value={c.id}>{c.firstName} {c.lastName} ({c.email})</option>
                             ))}
                         </select>
 
                         <select value={selectedIsbn} onChange={(e) => setSelectedIsbn(e.target.value)} style={{ width: '100%', marginBottom: '8px', padding: '6px' }}>
                             <option value="">-- Seleccionar Libro por ISBN --</option>
-                            {books.map(b => <option key={b.isbn} value={b.isbn}>{b.title} (ISBN: {b.isbn})</option>)}
+                            {state.books.map(b => <option key={b.isbn} value={b.isbn}>{b.title}</option>)}
                         </select>
 
-                        <input type="number" min="1" value={quantitySale} onChange={(e) => setQuantitySale(e.target.value)} placeholder="Cantidad a Vender" style={{ width: '100%', marginBottom: '12px', padding: '6px' }} />
-                        <button type="submit" style={{ padding: '8px 12px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }} disabled={loading}>Procesar Compra</button>
+                        <input type="number" min="1" value={quantitySale} onChange={(e) => setQuantitySale(e.target.value)} style={{ width: '100%', marginBottom: '12px', padding: '6px' }} />
+                        <button type="submit" style={{ padding: '8px 12px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white', border: 'none' }} disabled={isLoading}>Procesar Compra</button>
                     </form>
                 </div>
             </div>
 
-            {/* Tabla General de Inventario */}
+            {/* Tabla */}
             <h3>📊 Inventario General de Libros</h3>
             <table border={1} cellPadding={8} style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
                 <thead>
@@ -147,27 +122,27 @@ export const BooksPage: React.FC = () => {
                     <th>Título</th>
                     <th>Precio</th>
                     <th>Autores</th>
-                    <th style={{ backgroundColor: '#e6f4ea' }}>📥 Abastecido (Supplied)</th>
-                    <th style={{ backgroundColor: '#fce8e6' }}>💸 Vendido (Sold)</th>
-                    <th style={{ backgroundColor: '#e8f0fe' }}>📦 Stock Disponible</th>
+                    <th>📥 Abastecido</th>
+                    <th>💸 Vendido</th>
+                    <th>📦 Stock</th>
                 </tr>
                 </thead>
                 <tbody>
-                {books.length === 0 ? (
+                {state.books.length === 0 ? (
                     <tr>
-                        <td colSpan={7} style={{ textAlign: 'center' }}>No hay libros registrados en el sistema distribuido.</td>
+                        <td colSpan={7} style={{ textAlign: 'center' }}>No hay libros en el sistema.</td>
                     </tr>
                 ) : (
-                    books.map((book) => {
+                    state.books.map((book) => {
                         const stock = book.inventorySupplied - book.inventorySold;
                         return (
                             <tr key={book.isbn}>
                                 <td><strong>{book.isbn}</strong></td>
                                 <td>{book.title}</td>
                                 <td>${book.price.toFixed(2)}</td>
-                                <td>{book.authors && book.authors.length > 0 ? book.authors.join(', ') : 'Sin autor mapeado'}</td>
-                                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{book.inventorySupplied}</td>
-                                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{book.inventorySold}</td>
+                                <td>{book.authors?.join(', ') || 'Sin autor'}</td>
+                                <td style={{ textAlign: 'center' }}>{book.inventorySupplied}</td>
+                                <td style={{ textAlign: 'center' }}>{book.inventorySold}</td>
                                 <td style={{ textAlign: 'center', fontWeight: 'bold', color: stock < 3 ? 'red' : 'green' }}>{stock}</td>
                             </tr>
                         );
