@@ -1,0 +1,61 @@
+.container {
+    padding: 20px;
+    font-family: sans-serif;
+}
+
+.contentWrapper {
+    display: flex;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.formBox {
+    flex: 1;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 8px;
+    max-height: 200px;
+}
+
+.formGroup {
+    margin-bottom: 10px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.inputField {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.submitBtn {
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.tableContainer {
+    flex: 2;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tableHeader {
+    background-color: #f2f2f2;
+}
+
+.deleteBtn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}

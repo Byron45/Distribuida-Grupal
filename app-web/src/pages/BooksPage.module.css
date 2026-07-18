@@ -1,0 +1,64 @@
+.container {
+    padding: 20px;
+    font-family: sans-serif;
+}
+
+.actionGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.formCard {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.formInput, .formSelect {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.submitBtn {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.btnPurchase {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.tableHeader {
+    background-color: #f2f2f2;
+}
+
+.stockLow {
+    color: red;
+    font-weight: bold;
+}
+
+.stockOk {
+    color: green;
+    font-weight: bold;
+}
+
+.deleteBtn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}

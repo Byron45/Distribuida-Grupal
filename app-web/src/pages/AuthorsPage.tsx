@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { authorService } from '../services/authorService';
 import { useAppStore } from '../store/useAppStore';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { ErrorMessage } from '../components/ErrorMessage';
+import styles from './AuthorsPage.module.css';
 
 export const AuthorsPage: React.FC = () => {
-
     const { authors, loading, error, loadAllData, setError } = useAppStore();
-
     const [name, setName] = useState('');
     const [localLoading, setLocalLoading] = useState(false);
 
     useEffect(() => {
-
         loadAllData();
     }, []);
 
@@ -53,59 +53,51 @@ export const AuthorsPage: React.FC = () => {
     const isLoading = loading || localLoading;
 
     if (loading && authors.length === 0) {
-        return (
-            <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif', color: '#666' }}>
-                <div style={{ marginBottom: '15px', fontSize: '32px' }}>⏳</div>
-                <h3 style={{ margin: '0 0 8px 0' }}>Sincronizando Base de Datos...</h3>
-                <p style={{ fontSize: '14px', color: '#999', margin: 0 }}>Conectando con el catálogo de Autores (Quarkus)</p>
-            </div>
-        );
+        return <LoadingSpinner message="Conectando con el catálogo de Autores (Quarkus)" />;
     }
 
     return (
-        <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+        <div className={styles.container}>
             <h2>Gestión de Autores (Microservicio Quarkus)</h2>
 
-            {error && <div style={{ color: 'red', marginBottom: '15px' }}>⚠️ {error}</div>}
+            {error && <ErrorMessage message={error} />}
 
-            <div style={{ display: 'flex', gap: '40px', marginTop: '20px' }}>
+            <div className={styles.contentWrapper}>
                 {/* Formulario */}
-                <div style={{ flex: 1, border: '1px solid #ccc', padding: '20px', borderRadius: '8px', maxHeight: '200px' }}>
+                <div className={styles.formBox}>
                     <h3>Registrar Nuevo Autor</h3>
                     <form onSubmit={handleSubmit}>
-                        <div style={{ marginBottom: '10px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Nombre del Autor:</label>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Nombre del Autor:</label>
                             <input
+                                className={styles.inputField}
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Ej. Gabriel García Márquez"
-                                style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
                                 disabled={isLoading}
                             />
                         </div>
-                        <button type="submit" style={{ padding: '8px 15px', cursor: 'pointer' }} disabled={isLoading}>
+                        <button className={styles.submitBtn} type="submit" disabled={isLoading}>
                             {isLoading ? 'Guardando...' : 'Guardar Autor'}
                         </button>
                     </form>
                 </div>
 
                 {/* Tabla */}
-                <div style={{ flex: 2 }}>
+                <div className={styles.tableContainer}>
                     <h3>Autores Registrados</h3>
-                    <table border={1} cellPadding={8} style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <table className={styles.table} border={1} cellPadding={8}>
                         <thead>
-                        <tr style={{ backgroundColor: '#f2f2f2' }}>
-                            <th style={{ width: '20%' }}>ID</th>
+                        <tr className={styles.tableHeader}>
+                            <th>ID</th>
                             <th>Nombre</th>
-                            <th style={{ width: '25%', textAlign: 'center' }}>Acciones</th>
+                            <th style={{ textAlign: 'center' }}>Acciones</th>
                         </tr>
                         </thead>
                         <tbody>
                         {authors.length === 0 ? (
-                            <tr>
-                                <td colSpan={3} style={{ textAlign: 'center' }}>No hay autores registrados.</td>
-                            </tr>
+                            <tr><td colSpan={3} style={{ textAlign: 'center' }}>No hay autores registrados.</td></tr>
                         ) : (
                             authors.map((author) => (
                                 <tr key={author.id}>
@@ -113,8 +105,8 @@ export const AuthorsPage: React.FC = () => {
                                     <td>{author.name}</td>
                                     <td style={{ textAlign: 'center' }}>
                                         <button
+                                            className={styles.deleteBtn}
                                             onClick={() => author.id !== undefined && handleDelete(author.id, author.name)}
-                                            style={{ backgroundColor: '#ff4d4d', color: 'white', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}
                                             disabled={isLoading}
                                         >
                                             ❌ Eliminar

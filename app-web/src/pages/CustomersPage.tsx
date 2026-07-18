@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { customerService } from '../services/customerService';
 import { useAppStore } from '../store/useAppStore';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { ErrorMessage } from '../components/ErrorMessage';
+import styles from './CustomersPage.module.css';
 
 export const CustomersPage: React.FC = () => {
     const { customers, loading, error, loadAllData, setError } = useAppStore();
@@ -50,50 +53,44 @@ export const CustomersPage: React.FC = () => {
     const isLoading = loading || localLoading;
 
     if (loading && customers.length === 0) {
-        return (
-            <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif', color: '#666' }}>
-                <div style={{ marginBottom: '15px', fontSize: '32px' }}>⏳</div>
-                <h3>Sincronizando Base de Datos...</h3>
-                <p style={{ fontSize: '14px', color: '#999' }}>Conectando con el microservicio de Clientes</p>
-            </div>
-        );
+        return <LoadingSpinner message="Conectando con el microservicio de Clientes" />;
     }
 
     return (
-        <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+        <div className={styles.container}>
             <h2>Gestión de Clientes (Microservicio Spring Boot)</h2>
 
-            {error && <div style={{ color: 'red', marginBottom: '15px' }}>⚠️ {error}</div>}
+            {error && <ErrorMessage message={error} />}
 
-            <div style={{ display: 'flex', gap: '40px', marginTop: '20px' }}>
+            <div className={styles.contentWrapper}>
                 {/* Formulario */}
-                <div style={{ flex: 1, border: '1px solid #ccc', padding: '20px', borderRadius: '8px', maxHeight: '340px' }}>
+                <div className={styles.formBox}>
                     <h3>Registrar Nuevo Cliente</h3>
                     <form onSubmit={handleSubmit}>
-                        <div style={{ marginBottom: '10px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Nombre:</label>
-                            <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} disabled={isLoading} />
+                        <div className={styles.formGroup}>
+                            <label>Nombre:</label>
+                            <input className={styles.inputField} type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={isLoading} />
                         </div>
-                        <div style={{ marginBottom: '10px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Apellido:</label>
-                            <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} disabled={isLoading} />
+                        <div className={styles.formGroup}>
+                            <label>Apellido:</label>
+                            <input className={styles.inputField} type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={isLoading} />
                         </div>
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Email:</label>
-                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} disabled={isLoading} />
+                        <div className={styles.formGroup}>
+                            <label>Email:</label>
+                            <input className={styles.inputField} type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
                         </div>
-                        <button type="submit" style={{ padding: '8px 15px', cursor: 'pointer' }} disabled={isLoading}>
+                        <button className={styles.submitBtn} type="submit" disabled={isLoading}>
                             {isLoading ? 'Registrando...' : 'Registrar Cliente'}
                         </button>
                     </form>
                 </div>
 
                 {/* Tabla */}
-                <div style={{ flex: 2 }}>
+                <div className={styles.tableContainer}>
                     <h3>Clientes Registrados</h3>
-                    <table border={1} cellPadding={8} style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <table className={styles.table} border={1} cellPadding={8}>
                         <thead>
-                        <tr style={{ backgroundColor: '#f2f2f2' }}>
+                        <tr className={styles.tableHeader}>
                             <th style={{ width: '10%' }}>ID</th>
                             <th>Nombre Completo</th>
                             <th>Email</th>
@@ -102,9 +99,7 @@ export const CustomersPage: React.FC = () => {
                         </thead>
                         <tbody>
                         {customers.length === 0 ? (
-                            <tr>
-                                <td colSpan={4} style={{ textAlign: 'center' }}>No hay clientes registrados.</td>
-                            </tr>
+                            <tr><td colSpan={4} style={{ textAlign: 'center' }}>No hay clientes registrados.</td></tr>
                         ) : (
                             customers.map((customer) => (
                                 <tr key={customer.id}>
@@ -113,8 +108,8 @@ export const CustomersPage: React.FC = () => {
                                     <td>{customer.email}</td>
                                     <td style={{ textAlign: 'center' }}>
                                         <button
+                                            className={styles.deleteBtn}
                                             onClick={() => customer.id !== undefined && handleDelete(customer.id, `${customer.firstName} ${customer.lastName}`)}
-                                            style={{ backgroundColor: '#ff4d4d', color: 'white', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}
                                             disabled={isLoading}
                                         >
                                             ❌ Eliminar
