@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-authors
+  namespace: books-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app-authors
+  template:
+    metadata:
+      labels:
+        app: app-authors
+    spec:
+      containers:
+        - name: app-authors
+          image: byronsda45/app-authors:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: books-config
+            - secretRef:
+                name: books-secret
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-authors
+  namespace: books-app
+spec:
+  selector:
+    app: app-authors
+  ports:
+    - port: 8080
+      targetPort: 8080
