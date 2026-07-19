@@ -1,26 +1,28 @@
-import api from './api';
-import type { Book } from '../types/index';
+import {booksApi} from './api';
+import type {Book} from '../types/index';
 
 export const bookService = {
-
     getAll: async (): Promise<Book[]> => {
-        const response = await api.get<Book[]>('/books');
+        const response = await booksApi.get<Book[]>('/books');
         return response.data;
     },
 
-    supply: async (bookData: any): Promise<Book> => {
-        const response = await api.post<Book>('/books', bookData);
+    getByIsbn: async (isbn: string): Promise<Book> => {
+        const response = await booksApi.get<Book>(`/books/${isbn}`);
         return response.data;
     },
 
-    purchase: async (purchaseData: { customerId: number; isbn: string; quantity: number }): Promise<any> => {
-        const response = await api.post('/books/purchase', purchaseData);
+    create: async (book: Partial<Book>): Promise<Book> => {
+        const response = await booksApi.post<Book>('/books', book);
+        return response.data;
+    },
+
+    update: async (isbn: string, book: Partial<Book>): Promise<Book> => {
+        const response = await booksApi.put<Book>(`/books/${isbn}`, book);
         return response.data;
     },
 
     delete: async (isbn: string): Promise<void> => {
-        const response = await api.delete(`/books/${isbn}`);
-        return response.data;
-    }
-
+        await booksApi.delete(`/books/${isbn}`);
+    },
 };

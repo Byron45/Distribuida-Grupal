@@ -1,87 +1,119 @@
-import React, { useEffect, useState } from 'react';
-import { customerService } from '../services/customerService';
-import { useAppStore } from '../store/useAppStore';
-import { LoadingSpinner } from '../components/LoadingSpinner';
-import { ErrorMessage } from '../components/ErrorMessage';
+import React, {useEffect, useState} from 'react';
+import {useAppStore} from '../store/useAppStore';
+import {LoadingSpinner} from '../components/LoadingSpinner';
+import {ErrorMessage} from '../components/ErrorMessage';
+import type {Customer} from '../types/index';
 import styles from './CustomersPage.module.css';
 
-export const CustomersPage: React.FC = () => {
-    const { customers, loading, error, loadAllData, setError } = useAppStore();
+const emptyForm: Customer = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+};
 
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [localLoading, setLocalLoading] = useState(false);
+export const CustomersPage: React.FC = () => {
+    const {customers, loading, error, loadAllData, saveCustomer, deleteCustomer} = useAppStore();
+
+    const [form, setForm] = useState<Customer>(emptyForm);
+    const [editId, setEditId] = useState<number | null>(null);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         loadAllData();
     }, []);
 
+    const resetForm = () => {
+        setForm(emptyForm);
+        setEditId(null);
+    };
+
+    const handleChange = (field: keyof Customer, value: string) => {
+        setForm((prev) => ({...prev, [field]: value}));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!firstName.trim() || !lastName.trim() || !email.trim()) return;
+        if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) return;
 
-        try {
-            setLocalLoading(true);
-            await customerService.create({ firstName, lastName, email } as any);
-            setFirstName('');
-            setLastName('');
-            setEmail('');
-            await loadAllData();
-        } catch (err: any) {
-            setError(err.message || 'Error al registrar cliente');
-        } finally {
-            setLocalLoading(false);
-        }
+        setSubmitting(true);
+        const customer: Customer = editId ? {...form, id: editId} : form;
+        await saveCustomer(customer);
+        setSubmitting(false);
+        resetForm();
+    };
+
+    const handleEdit = (customer: Customer) => {
+        setEditId(customer.id ?? null);
+        setForm({
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            email: customer.email,
+            phone: customer.phone ?? '',
+            address: customer.address ?? '',
+        });
     };
 
     const handleDelete = async (id: number, name: string) => {
         const confirmed = window.confirm(`¿Está seguro de eliminar al cliente "${name}"? Esta acción es permanente.`);
         if (!confirmed) return;
 
-        try {
-            setLocalLoading(true);
-            await customerService.delete(id);
-            await loadAllData();
-        } catch (err: any) {
-            setError(err.message || 'Error al eliminar cliente');
-        } finally {
-            setLocalLoading(false);
-        }
+        setSubmitting(true);
+        await deleteCustomer(id);
+        setSubmitting(false);
     };
 
-    const isLoading = loading || localLoading;
+    const isBusy = loading || submitting;
 
     if (loading && customers.length === 0) {
-        return <LoadingSpinner message="Conectando con el microservicio de Clientes" />;
+        return <LoadingSpinner message="Conectando con el microservicio de Clientes"/>;
     }
 
     return (
         <div className={styles.container}>
             <h2>Gestión de Clientes (Microservicio Spring Boot)</h2>
 
-            {error && <ErrorMessage message={error} />}
+            {error && <ErrorMessage message={error}/>}
 
             <div className={styles.contentWrapper}>
-                {/* Formulario */}
+                {/* Formulario crear / editar */}
                 <div className={styles.formBox}>
-                    <h3>Registrar Nuevo Cliente</h3>
+                    <h3>{editId ? 'Editar Cliente' : 'Registrar Nuevo Cliente'}</h3>
                     <form onSubmit={handleSubmit}>
                         <div className={styles.formGroup}>
-                            <label>Nombre:</label>
-                            <input className={styles.inputField} type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={isLoading} />
+                            <label className={styles.label}>Nombre:</label>
+                            <input className={styles.inputField} type="text" value={form.firstName}
+                                   onChange={(e) => handleChange('firstName', e.target.value)} disabled={isBusy}/>
                         </div>
                         <div className={styles.formGroup}>
-                            <label>Apellido:</label>
-                            <input className={styles.inputField} type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={isLoading} />
+                            <label className={styles.label}>Apellido:</label>
+                            <input className={styles.inputField} type="text" value={form.lastName}
+                                   onChange={(e) => handleChange('lastName', e.target.value)} disabled={isBusy}/>
                         </div>
                         <div className={styles.formGroup}>
-                            <label>Email:</label>
-                            <input className={styles.inputField} type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
+                            <label className={styles.label}>Email:</label>
+                            <input className={styles.inputField} type="email" value={form.email}
+                                   onChange={(e) => handleChange('email', e.target.value)} disabled={isBusy}/>
                         </div>
-                        <button className={styles.submitBtn} type="submit" disabled={isLoading}>
-                            {isLoading ? 'Registrando...' : 'Registrar Cliente'}
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Teléfono:</label>
+                            <input className={styles.inputField} type="text" value={form.phone}
+                                   onChange={(e) => handleChange('phone', e.target.value)} disabled={isBusy}/>
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Dirección:</label>
+                            <input className={styles.inputField} type="text" value={form.address}
+                                   onChange={(e) => handleChange('address', e.target.value)} disabled={isBusy}/>
+                        </div>
+                        <button className={styles.submitBtn} type="submit" disabled={isBusy}>
+                            {submitting ? 'Guardando...' : editId ? 'Actualizar' : 'Registrar Cliente'}
                         </button>
+                        {editId && (
+                            <button type="button" className={styles.cancelBtn} onClick={resetForm} disabled={isBusy}>
+                                Cancelar
+                            </button>
+                        )}
                     </form>
                 </div>
 
@@ -91,26 +123,34 @@ export const CustomersPage: React.FC = () => {
                     <table className={styles.table} border={1} cellPadding={8}>
                         <thead>
                         <tr className={styles.tableHeader}>
-                            <th style={{ width: '10%' }}>ID</th>
+                            <th style={{width: '6%'}}>ID</th>
                             <th>Nombre Completo</th>
                             <th>Email</th>
-                            <th style={{ width: '20%', textAlign: 'center' }}>Acciones</th>
+                            <th>Teléfono</th>
+                            <th style={{width: '20%', textAlign: 'center'}}>Acciones</th>
                         </tr>
                         </thead>
                         <tbody>
                         {customers.length === 0 ? (
-                            <tr><td colSpan={4} style={{ textAlign: 'center' }}>No hay clientes registrados.</td></tr>
+                            <tr>
+                                <td colSpan={5} style={{textAlign: 'center'}}>No hay clientes registrados.</td>
+                            </tr>
                         ) : (
                             customers.map((customer) => (
                                 <tr key={customer.id}>
                                     <td>{customer.id}</td>
                                     <td>{customer.firstName} {customer.lastName}</td>
                                     <td>{customer.email}</td>
-                                    <td style={{ textAlign: 'center' }}>
+                                    <td>{customer.phone}</td>
+                                    <td style={{textAlign: 'center'}}>
+                                        <button className={styles.editBtn} onClick={() => handleEdit(customer)}
+                                                disabled={isBusy}>
+                                            ✏️ Editar
+                                        </button>
                                         <button
                                             className={styles.deleteBtn}
                                             onClick={() => customer.id !== undefined && handleDelete(customer.id, `${customer.firstName} ${customer.lastName}`)}
-                                            disabled={isLoading}
+                                            disabled={isBusy}
                                         >
                                             ❌ Eliminar
                                         </button>

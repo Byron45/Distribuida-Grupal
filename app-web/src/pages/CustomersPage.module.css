@@ -14,7 +14,7 @@
     border: 1px solid #ccc;
     padding: 20px;
     border-radius: 8px;
-    max-height: 340px;
+    max-height: 520px;
 }
 
 .formGroup {
@@ -53,4 +53,29 @@
     padding: 4px 10px;
     border-radius: 4px;
     cursor: pointer;
+}
+
+.editBtn {
+    background-color: #4d79ff;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 6px;
+}
+
+.cancelBtn {
+    padding: 8px 15px;
+    cursor: pointer;
+    margin-left: 8px;
+    background-color: #aaa;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 5px;
 }
