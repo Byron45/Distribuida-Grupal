@@ -8,7 +8,7 @@ interface Props {
 export const LoadingSpinner: React.FC<Props> = ({ message }) => {
     return (
         <div className={styles.loadingContainer}>
-            <div className={styles.loadingIcon}>⏳</div>
+            <div className={styles.loadingIcon}></div>
             <h3>Sincronizando Base de Datos...</h3>
             <p>{message}</p>
         </div>

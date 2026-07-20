@@ -8,7 +8,7 @@ interface Props {
 export const ErrorMessage: React.FC<Props> = ({ message }) => {
     return (
         <div className={styles.errorMessage}>
-            ⚠️ {message}
+             {message}
         </div>
     );
 };

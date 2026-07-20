@@ -30,7 +30,6 @@ export const BooksPage: React.FC = () => {
         if (!isbn.trim() || !title.trim() || !price) return;
 
         setSubmitting(true);
-        // El backend recibe la entidad Book: isbn, title, price, version
         const book: Partial<Book> = {
             isbn,
             title,
@@ -70,7 +69,6 @@ export const BooksPage: React.FC = () => {
             {error && <ErrorMessage message={error}/>}
 
             <div className={styles.contentWrapper}>
-                {/* Formulario crear / editar */}
                 <div className={styles.formBox}>
                     <h3>{isEdit ? 'Editar Libro' : 'Registrar Nuevo Libro'}</h3>
                     <form onSubmit={handleSubmit}>
@@ -117,10 +115,9 @@ export const BooksPage: React.FC = () => {
                     </form>
                 </div>
 
-                {/* Tabla */}
                 <div className={styles.tableContainer}>
                     <h3>Libros Registrados</h3>
-                    <table className={styles.table} border={1} cellPadding={8}>
+                    <table className={styles.table}>
                         <thead>
                         <tr className={styles.tableHeader}>
                             <th>ISBN</th>
@@ -150,17 +147,17 @@ export const BooksPage: React.FC = () => {
                                     </td>
                                     <td style={{textAlign: 'center'}}>{book.inventorySold}</td>
                                     <td style={{textAlign: 'center'}}>{book.inventorySupplied}</td>
-                                    <td style={{textAlign: 'center'}}>
+                                    <td className={styles.actionCell}>
                                         <button className={styles.editBtn} onClick={() => handleEdit(book)}
                                                 disabled={isBusy}>
-                                            ✏️ Editar
+                                            Editar
                                         </button>
                                         <button
                                             className={styles.deleteBtn}
                                             onClick={() => handleDelete(book.isbn, book.title)}
                                             disabled={isBusy}
                                         >
-                                            ❌ Eliminar
+                                            Eliminar
                                         </button>
                                     </td>
                                 </tr>

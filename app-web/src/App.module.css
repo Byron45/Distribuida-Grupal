@@ -1,0 +1,32 @@
+.navbar {
+    padding: 0 40px;
+    height: 64px;
+    background-color: #1B2A41;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navLink {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 8px 18px;
+    border-radius: 999px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.navLink:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navLinkActive {
+    background-color: #F4771B;
+    color: #ffffff;
+}
+
+.navLinkActive:hover {
+    background-color: #F4771B;
+}
