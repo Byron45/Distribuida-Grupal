@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-account
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik-account
+      containers:
+        - name: traefik
+          image: docker.io/traefik:3.2
+          args:
+            - "--api.insecure=true"
+            - "--api.dashboard=true"
+            - "--providers.consulcatalog=true"
+            - "--providers.consulcatalog.endpoint.address=consul:8500"
+            - "--providers.consulcatalog.exposedByDefault=false"
+            - "--entrypoints.web.address=:8000"
+          ports:
+            - name: web
+              containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik
+spec:
+  selector:
+    app: traefik
+  ports:
+    - name: web
+      port: 8000
+      targetPort: 8000

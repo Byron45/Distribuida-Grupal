@@ -1,0 +1,21 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: traefik-route
+spec:
+  to:
+    kind: Service
+    name: traefik
+  port:
+    targetPort: 80
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: app-web-route
+spec:
+  to:
+    kind: Service
+    name: app-web
+  port:
+    targetPort: 80

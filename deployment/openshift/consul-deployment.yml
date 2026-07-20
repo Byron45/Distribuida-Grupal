@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consul
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consul
+  template:
+    metadata:
+      labels:
+        app: consul
+    spec:
+      containers:
+        - name: consul
+          image: docker.io/hashicorp/consul:1.15.4
+          env:
+            - name: CONSUL_DISABLE_PERM_MGMT
+              value: "true"
+          args:
+            - "agent"
+            - "-dev"
+            - "-ui"
+            - "-client=0.0.0.0"
+            - "-bind=0.0.0.0"
+            - "-data-dir=/tmp/consul"
+          ports:
+            - containerPort: 8500
+          volumeMounts:
+            - name: consul-data
+              mountPath: /tmp/consul
+      volumes:
+        - name: consul-data
+          emptyDir: { }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consul
+spec:
+  selector:
+    app: consul
+  ports:
+    - port: 8500
+      targetPort: 8500

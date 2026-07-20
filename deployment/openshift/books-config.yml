@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: books-config
+data:
+  QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/books-db
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/books-db
+  QUARKUS_HTTP_PORT: "8080"
+  SERVER_PORT: "8080"
+  CONSUL_HOST: consul
+  CONSUL_PORT: "8500"
+  SPRING_CLOUD_CONSUL_HOST: consul
+  SPRING_CLOUD_CONSUL_PORT: "8500"
+  QUARKUS_FLYWAY_MIGRATE_AT_START: "true"
+  QUARKUS_FLYWAY_BASELINE_ON_MIGRATE: "true"
